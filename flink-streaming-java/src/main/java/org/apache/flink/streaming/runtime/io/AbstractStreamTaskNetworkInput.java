@@ -30,7 +30,10 @@ import org.apache.flink.runtime.plugable.NonReusingDeserializationDelegate;
 import org.apache.flink.streaming.runtime.io.checkpointing.CheckpointedInputGate;
 import org.apache.flink.streaming.runtime.streamrecord.StreamElement;
 import org.apache.flink.streaming.runtime.streamrecord.StreamElementSerializer;
+import org.apache.flink.streaming.runtime.streamrecord.StreamRecord;
 import org.apache.flink.streaming.runtime.streamstatus.StatusWatermarkValve;
+
+import com.datavisor.storage.TenantContext;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -131,7 +134,13 @@ public abstract class AbstractStreamTaskNetworkInput<
 
     private void processElement(StreamElement recordOrMark, DataOutput<T> output) throws Exception {
         if (recordOrMark.isRecord()) {
-            output.emitRecord(recordOrMark.asRecord());
+            StreamRecord<T> record = recordOrMark.asRecord();
+            TenantContext.setTenant(record.getTenant());
+            try {
+                output.emitRecord(record);
+            } finally {
+                TenantContext.reset();
+            }
         } else if (recordOrMark.isWatermark()) {
             statusWatermarkValve.inputWatermark(
                     recordOrMark.asWatermark(), flattenedChannelIndices.get(lastChannel), output);

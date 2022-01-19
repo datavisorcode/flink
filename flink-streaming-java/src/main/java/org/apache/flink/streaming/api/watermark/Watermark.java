@@ -20,6 +20,8 @@ package org.apache.flink.streaming.api.watermark;
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.streaming.runtime.streamrecord.StreamElement;
 
+import com.datavisor.storage.TenantContext;
+
 import java.util.Objects;
 
 /**
@@ -56,7 +58,10 @@ public final class Watermark extends StreamElement {
     /** Creates a new watermark with the given timestamp in milliseconds. */
     public Watermark(long timestamp) {
         this.timestamp = timestamp;
-        this.key = "";
+        this.key =
+                TenantContext.getTenant() == null || timestamp == Long.MAX_VALUE
+                        ? ""
+                        : TenantContext.getTenant();
     }
 
     public Watermark(long timestamp, String key) {

@@ -24,6 +24,7 @@ import org.apache.flink.api.common.eventtime.WatermarkOutputMultiplexer;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.metrics.Gauge;
 import org.apache.flink.metrics.MetricGroup;
+import org.apache.flink.runtime.util.SerializableFunction;
 import org.apache.flink.streaming.api.functions.source.SourceFunction.SourceContext;
 import org.apache.flink.streaming.connectors.kafka.config.OffsetCommitMode;
 import org.apache.flink.streaming.connectors.kafka.internals.metrics.KafkaConsumerMetricConstants;
@@ -77,6 +78,8 @@ public abstract class AbstractFetcher<T, KPH> {
      * idleness.
      */
     protected final WatermarkOutput watermarkOutput;
+    /** Optional tenant supplier to get tenant name from the kafka topic partition */
+    protected final SerializableFunction<KafkaTopicPartition, String> tenantSupplier;
 
     /** {@link WatermarkOutputMultiplexer} for supporting per-partition watermark generation. */
     private final WatermarkOutputMultiplexer watermarkOutputMultiplexer;
@@ -149,6 +152,29 @@ public abstract class AbstractFetcher<T, KPH> {
             MetricGroup consumerMetricGroup,
             boolean useMetrics)
             throws Exception {
+        this(
+                sourceContext,
+                seedPartitionsWithInitialOffsets,
+                watermarkStrategy,
+                processingTimeProvider,
+                autoWatermarkInterval,
+                userCodeClassLoader,
+                consumerMetricGroup,
+                useMetrics,
+                ktp -> null);
+    }
+
+    protected AbstractFetcher(
+            SourceContext<T> sourceContext,
+            Map<KafkaTopicPartition, Long> seedPartitionsWithInitialOffsets,
+            SerializedValue<WatermarkStrategy<T>> watermarkStrategy,
+            ProcessingTimeService processingTimeProvider,
+            long autoWatermarkInterval,
+            ClassLoader userCodeClassLoader,
+            MetricGroup consumerMetricGroup,
+            boolean useMetrics,
+            SerializableFunction<KafkaTopicPartition, String> tenantSupplier)
+            throws Exception {
         this.sourceContext = checkNotNull(sourceContext);
         this.watermarkOutput = new SourceContextWatermarkOutputAdapter<>(sourceContext);
         this.watermarkOutputMultiplexer = new WatermarkOutputMultiplexer(watermarkOutput);
@@ -156,6 +182,7 @@ public abstract class AbstractFetcher<T, KPH> {
         this.userCodeClassLoader = checkNotNull(userCodeClassLoader);
 
         this.useMetrics = useMetrics;
+        this.tenantSupplier = tenantSupplier;
         this.consumerMetricGroup = checkNotNull(consumerMetricGroup);
         this.legacyCurrentOffsetsMetricGroup =
                 consumerMetricGroup.addGroup(LEGACY_CURRENT_OFFSETS_METRICS_GROUP);
@@ -423,7 +450,8 @@ public abstract class AbstractFetcher<T, KPH> {
                                 kafkaTopicPartition.getTopic()
                                         + '-'
                                         + kafkaTopicPartition.getPartition();
-                        watermarkOutputMultiplexer.registerNewOutput(partitionId);
+                        final String tenant = getTenantNameFromKafkaHandle(kafkaTopicPartition);
+                        watermarkOutputMultiplexer.registerNewOutput(partitionId, tenant);
                         WatermarkOutput immediateOutput =
                                 watermarkOutputMultiplexer.getImmediateOutput(partitionId);
                         WatermarkOutput deferredOutput =
@@ -452,6 +480,17 @@ public abstract class AbstractFetcher<T, KPH> {
                 // cannot happen, add this as a guard for the future
                 throw new RuntimeException();
         }
+    }
+
+    /**
+     * get the tenant name from kafka handle, return null by default. sub-class may override this to
+     * implement its own logic
+     *
+     * @param kafkaTopicPartition
+     * @return tenant name
+     */
+    protected String getTenantNameFromKafkaHandle(KafkaTopicPartition kafkaTopicPartition) {
+        return null;
     }
 
     /**

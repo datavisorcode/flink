@@ -83,6 +83,7 @@ public class FlinkKafkaShuffleConsumer<T> extends FlinkKafkaConsumer<T> {
                 runtimeContext.getTaskNameWithSubtasks(),
                 deserializer,
                 properties,
+                tenantSupplier,
                 pollTimeout,
                 runtimeContext.getMetricGroup(),
                 consumerMetricGroup,

@@ -334,9 +334,9 @@ public abstract class FlinkKafkaConsumerBase<T> extends RichParallelSourceFuncti
      * interfaces support watermark idleness and no longer need to differentiate between "periodic"
      * and "punctuated" watermarks.
      *
-     * @deprecated Please use {@link #assignTimestampsAndWatermarks(WatermarkStrategy)} instead.
      * @param assigner The timestamp assigner / watermark generator to use.
      * @return The consumer object, to allow function chaining.
+     * @deprecated Please use {@link #assignTimestampsAndWatermarks(WatermarkStrategy)} instead.
      */
     @Deprecated
     public FlinkKafkaConsumerBase<T> assignTimestampsAndWatermarks(
@@ -380,9 +380,9 @@ public abstract class FlinkKafkaConsumerBase<T> extends RichParallelSourceFuncti
      * interfaces support watermark idleness and no longer need to differentiate between "periodic"
      * and "punctuated" watermarks.
      *
-     * @deprecated Please use {@link #assignTimestampsAndWatermarks(WatermarkStrategy)} instead.
      * @param assigner The timestamp assigner / watermark generator to use.
      * @return The consumer object, to allow function chaining.
+     * @deprecated Please use {@link #assignTimestampsAndWatermarks(WatermarkStrategy)} instead.
      */
     @Deprecated
     public FlinkKafkaConsumerBase<T> assignTimestampsAndWatermarks(
@@ -1133,7 +1133,6 @@ public abstract class FlinkKafkaConsumerBase<T> extends RichParallelSourceFuncti
      * @param subscribedPartitionsToStartOffsets The set of partitions that this subtask should
      *     handle, with their start offsets.
      * @param watermarkStrategy Optional, a serialized WatermarkStrategy.
-     * @param runtimeContext The task's runtime context.
      * @return The instantiated fetcher
      * @throws Exception The method should forward exceptions
      */

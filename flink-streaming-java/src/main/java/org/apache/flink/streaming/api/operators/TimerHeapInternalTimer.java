@@ -22,6 +22,8 @@ import org.apache.flink.runtime.state.heap.HeapPriorityQueueSet;
 
 import javax.annotation.Nonnull;
 
+import java.util.Objects;
+
 /**
  * Implementation of {@link InternalTimer} to use with a {@link HeapPriorityQueueSet}.
  *
@@ -89,7 +91,7 @@ public final class TimerHeapInternalTimer<K, N>
             return timestamp == timer.getTimestamp()
                     && key.equals(timer.getKey())
                     && namespace.equals(timer.getNamespace())
-                    && tenant.equals(timer.getTenant());
+                    && Objects.equals(tenant, timer.getTenant());
         }
 
         return false;
@@ -118,6 +120,7 @@ public final class TimerHeapInternalTimer<K, N>
         int result = (int) (timestamp ^ (timestamp >>> 32));
         result = 31 * result + key.hashCode();
         result = 31 * result + namespace.hashCode();
+        result = Objects.hash(result, tenant);
         return result;
     }
 

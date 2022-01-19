@@ -28,8 +28,10 @@ import org.apache.flink.streaming.runtime.tasks.ProcessingTimeService;
 import org.apache.flink.util.CloseableIterator;
 import org.apache.flink.util.FlinkRuntimeException;
 import org.apache.flink.util.Preconditions;
-import org.apache.flink.util.TenantContext;
 import org.apache.flink.util.function.BiConsumerWithException;
+
+import com.datavisor.storage.TenantContext;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -320,8 +322,9 @@ public class InternalTimerServiceImpl<K, N> implements InternalTimerService<N> {
 
         Set<TimerHeapInternalTimer<K, N>> otherTenantTimers = new HashSet<>();
         while ((timer = eventTimeTimersQueue.peek()) != null && timer.getTimestamp() <= time) {
-            // skip timers belong to other tenant
+            // skip timers belong to other tenant, except for MAX_WATERMARK
             if (TimerHeapInternalTimer.class.isAssignableFrom(timer.getClass())
+                    && !StringUtils.isEmpty(tenant)
                     && !tenant.equals(((TimerHeapInternalTimer) timer).getTenant())) {
                 eventTimeTimersQueue.poll();
                 otherTenantTimers.add((TimerHeapInternalTimer) timer);

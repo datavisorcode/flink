@@ -19,6 +19,8 @@ package org.apache.flink.api.common.eventtime;
 
 import org.apache.flink.annotation.Public;
 
+import com.datavisor.storage.TenantContext;
+
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -67,7 +69,10 @@ public final class Watermark implements Serializable {
     /** Creates a new watermark with the given timestamp in milliseconds. */
     public Watermark(long timestamp) {
         this.timestamp = timestamp;
-        this.key = "";
+        this.key =
+                TenantContext.getTenant() == null || timestamp == Long.MAX_VALUE
+                        ? ""
+                        : TenantContext.getTenant();
     }
 
     public Watermark(long timestamp, String key) {

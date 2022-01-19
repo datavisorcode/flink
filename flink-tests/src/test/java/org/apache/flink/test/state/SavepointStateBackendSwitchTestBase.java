@@ -227,9 +227,9 @@ public abstract class SavepointStateBackendSwitchTestBase {
                         "event-time",
                         new TimerSerializer<>(
                                 keyedBackend.getKeySerializer(), IntSerializer.INSTANCE));
-        priorityQueue.add(new TimerHeapInternalTimer<>(1234L, "mno", namespace3));
-        priorityQueue.add(new TimerHeapInternalTimer<>(2345L, "mno", namespace2));
-        priorityQueue.add(new TimerHeapInternalTimer<>(3456L, "mno", namespace3));
+        priorityQueue.add(new TimerHeapInternalTimer<>(1234L, "mno", namespace3, "tenant1"));
+        priorityQueue.add(new TimerHeapInternalTimer<>(2345L, "mno", namespace2, "tenant2"));
+        priorityQueue.add(new TimerHeapInternalTimer<>(3456L, "mno", namespace3, "tenant3"));
 
         SnapshotStrategyRunner<KeyedStateHandle, ? extends FullSnapshotResources<?>>
                 savepointRunner =
@@ -314,12 +314,12 @@ public abstract class SavepointStateBackendSwitchTestBase {
         assertThat(priorityQueue.size(), equalTo(3));
         assertThat(
                 priorityQueue.poll(),
-                equalTo(new TimerHeapInternalTimer<>(1234L, "mno", namespace3)));
+                equalTo(new TimerHeapInternalTimer<>(1234L, "mno", namespace3, "tenant1")));
         assertThat(
                 priorityQueue.poll(),
-                equalTo(new TimerHeapInternalTimer<>(2345L, "mno", namespace2)));
+                equalTo(new TimerHeapInternalTimer<>(2345L, "mno", namespace2, "tenant2")));
         assertThat(
                 priorityQueue.poll(),
-                equalTo(new TimerHeapInternalTimer<>(3456L, "mno", namespace3)));
+                equalTo(new TimerHeapInternalTimer<>(3456L, "mno", namespace3, "tenant3")));
     }
 }

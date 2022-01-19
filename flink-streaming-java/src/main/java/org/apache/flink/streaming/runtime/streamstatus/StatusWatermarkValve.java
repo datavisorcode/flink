@@ -23,7 +23,8 @@ import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.streaming.runtime.io.PushingAsyncDataInput.DataOutput;
 import org.apache.flink.util.Preconditions;
-import org.apache.flink.util.TenantContext;
+
+import com.datavisor.storage.TenantContext;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -90,6 +91,7 @@ public class StatusWatermarkValve {
         // ignore the input watermark if its input channel, or all input channels are idle (i.e.
         // overall the valve is idle).
         String key = watermark.getKey();
+
         TenantContext.setTenant(key);
         try {
             if (lastOutputStreamStatus.isActive()
@@ -198,8 +200,6 @@ public class StatusWatermarkValve {
                     output.emitStreamStatus(lastOutputStreamStatus);
                 }
             }
-        } finally {
-            TenantContext.reset();
         }
     }
 

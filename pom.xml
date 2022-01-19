@@ -15,8 +15,9 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 -->
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-		 xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
 	<parent>
 		<groupId>org.apache</groupId>
@@ -28,9 +29,9 @@ under the License.
 
 	<groupId>org.apache.flink</groupId>
 	<artifactId>flink-parent</artifactId>
-	<version>1.13-SNAPSHOT</version>
+	<version>1.13-DV-SNAPSHOT</version>
 
-	<name>Flink : </name>
+	<name>Flink :</name>
 	<packaging>pom</packaging>
 	<url>https://flink.apache.org</url>
 	<inceptionYear>2014</inceptionYear>
@@ -46,7 +47,8 @@ under the License.
 	<scm>
 		<url>https://github.com/apache/flink</url>
 		<connection>git@github.com:apache/flink.git</connection>
-		<developerConnection>scm:git:https://gitbox.apache.org/repos/asf/flink.git</developerConnection>
+		<developerConnection>scm:git:https://gitbox.apache.org/repos/asf/flink.git
+		</developerConnection>
 	</scm>
 
 	<modules>
@@ -168,7 +170,7 @@ under the License.
 		<dependency>
 			<groupId>org.apache.flink</groupId>
 			<artifactId>force-shading</artifactId>
-			<version>1.13-SNAPSHOT</version>
+			<version>1.13-DV-SNAPSHOT</version>
 		</dependency>
 
 		<!-- Root dependencies for all projects -->
@@ -953,9 +955,12 @@ under the License.
 						<artifactId>maven-surefire-plugin</artifactId>
 						<configuration>
 							<systemProperties>
-								<flink.tests.enable-adaptive-scheduler>true</flink.tests.enable-adaptive-scheduler>
+								<flink.tests.enable-adaptive-scheduler>true
+								</flink.tests.enable-adaptive-scheduler>
 							</systemProperties>
-							<excludedGroups>org.apache.flink.testutils.junit.FailsWithAdaptiveScheduler</excludedGroups>
+							<excludedGroups>
+								org.apache.flink.testutils.junit.FailsWithAdaptiveScheduler
+							</excludedGroups>
 						</configuration>
 					</plugin>
 				</plugins>
@@ -1011,7 +1016,8 @@ under the License.
 							<groupId>org.apache.maven.plugins</groupId>
 							<artifactId>maven-surefire-plugin</artifactId>
 							<configuration>
-								<excludedGroups>org.apache.flink.testutils.junit.FailsOnJava11</excludedGroups>
+								<excludedGroups>org.apache.flink.testutils.junit.FailsOnJava11
+								</excludedGroups>
 							</configuration>
 						</plugin>
 						<plugin>
@@ -1019,7 +1025,9 @@ under the License.
 							<artifactId>maven-javadoc-plugin</artifactId>
 							<configuration>
 								<additionalJOptions>
-									<additionalJOption>--add-exports=java.base/sun.net.util=ALL-UNNAMED</additionalJOption>
+									<additionalJOption>
+										--add-exports=java.base/sun.net.util=ALL-UNNAMED
+									</additionalJOption>
 								</additionalJOptions>
 							</configuration>
 						</plugin>
@@ -1037,7 +1045,9 @@ under the License.
 								<arg>--add-exports=java.base/sun.net.util=ALL-UNNAMED</arg>
 								<arg>--add-exports=java.management/sun.management=ALL-UNNAMED</arg>
 								<arg>--add-exports=java.rmi/sun.rmi.registry=ALL-UNNAMED</arg>
-								<arg>--add-exports=java.security.jgss/sun.security.krb5=ALL-UNNAMED</arg>
+								<arg>
+									--add-exports=java.security.jgss/sun.security.krb5=ALL-UNNAMED
+								</arg>
 							</compilerArgs>
 						</configuration>
 					</plugin>
@@ -1160,8 +1170,10 @@ under the License.
 							<xmlOutput>true</xmlOutput>
 							<threshold>Low</threshold>
 							<effort>default</effort>
-							<findbugsXmlOutputDirectory>${project.build.directory}/spotbugs</findbugsXmlOutputDirectory>
-							<excludeFilterFile>${rootDir}/tools/maven/spotbugs-exclude.xml</excludeFilterFile>
+							<findbugsXmlOutputDirectory>${project.build.directory}/spotbugs
+							</findbugsXmlOutputDirectory>
+							<excludeFilterFile>${rootDir}/tools/maven/spotbugs-exclude.xml
+							</excludeFilterFile>
 							<failOnError>true</failOnError>
 						</configuration>
 					</plugin>
@@ -1208,8 +1220,8 @@ under the License.
 		</profile>
 
 		<profile>
-            <!-- Kept for backwards compatiblity, the doc buildbot expects
-                 this profile to exist.-->
+			<!-- Kept for backwards compatiblity, the doc buildbot expects
+				 this profile to exist.-->
 			<id>aggregate-scaladoc</id>
 		</profile>
 
@@ -1417,12 +1429,15 @@ under the License.
 							specific language governing permissions and limitations
 							under the License.
 						-->
-						<license implementation="org.apache.rat.analysis.license.SimplePatternBasedLicense">
-							<licenseFamilyCategory>AL2 </licenseFamilyCategory>
+						<license
+							implementation="org.apache.rat.analysis.license.SimplePatternBasedLicense">
+							<licenseFamilyCategory>AL2</licenseFamilyCategory>
 							<licenseFamilyName>Apache License 2.0</licenseFamilyName>
-							<notes />
+							<notes/>
 							<patterns>
-								<pattern>Licensed to the Apache Software Foundation (ASF) under one</pattern>
+								<pattern>Licensed to the Apache Software Foundation (ASF) under
+									one
+								</pattern>
 							</patterns>
 						</license>
 					</licenses>
@@ -1484,22 +1499,36 @@ under the License.
 						<!-- Test Data. -->
 						<exclude>**/src/test/resources/*-data</exclude>
 						<exclude>flink-tests/src/test/resources/testdata/terainput.txt</exclude>
-                        <exclude>flink-formats/flink-avro/src/test/resources/flink_11-kryo_registrations</exclude>
-						<exclude>flink-runtime/src/test/resources/flink_11-kryo_registrations</exclude>
-						<exclude>flink-core/src/test/resources/kryo-serializer-config-snapshot-v1</exclude>
+						<exclude>
+							flink-formats/flink-avro/src/test/resources/flink_11-kryo_registrations
+						</exclude>
+						<exclude>flink-runtime/src/test/resources/flink_11-kryo_registrations
+						</exclude>
+						<exclude>flink-core/src/test/resources/kryo-serializer-config-snapshot-v1
+						</exclude>
 						<exclude>flink-formats/flink-avro/src/test/resources/avro/*.avsc</exclude>
 						<exclude>out/test/flink-avro/avro/user.avsc</exclude>
 						<exclude>flink-table/flink-sql-client/src/test/resources/*.out</exclude>
-						<exclude>flink-table/flink-table-planner/src/test/scala/resources/*.out</exclude>
-						<exclude>flink-table/flink-table-planner-blink/src/test/resources/**/*.out</exclude>
+						<exclude>flink-table/flink-table-planner/src/test/scala/resources/*.out
+						</exclude>
+						<exclude>flink-table/flink-table-planner-blink/src/test/resources/**/*.out
+						</exclude>
 						<exclude>flink-yarn/src/test/resources/krb5.keytab</exclude>
 						<exclude>flink-end-to-end-tests/test-scripts/test-data/**</exclude>
-						<exclude>flink-end-to-end-tests/test-scripts/docker-hadoop-secure-cluster/config/keystore.jks</exclude>
-						<exclude>flink-connectors/flink-connector-kafka/src/test/resources/**</exclude>
-						<exclude>flink-connectors/flink-connector-hive/src/test/resources/**</exclude>
-						<exclude>flink-end-to-end-tests/flink-tpcds-test/tpcds-tool/answer_set/*</exclude>
-						<exclude>flink-end-to-end-tests/flink-tpcds-test/tpcds-tool/query/*</exclude>
-						<exclude>flink-connectors/flink-connector-kinesis/src/test/resources/profile</exclude>
+						<exclude>
+							flink-end-to-end-tests/test-scripts/docker-hadoop-secure-cluster/config/keystore.jks
+						</exclude>
+						<exclude>flink-connectors/flink-connector-kafka/src/test/resources/**
+						</exclude>
+						<exclude>flink-connectors/flink-connector-hive/src/test/resources/**
+						</exclude>
+						<exclude>flink-end-to-end-tests/flink-tpcds-test/tpcds-tool/answer_set/*
+						</exclude>
+						<exclude>flink-end-to-end-tests/flink-tpcds-test/tpcds-tool/query/*
+						</exclude>
+						<exclude>
+							flink-connectors/flink-connector-kinesis/src/test/resources/profile
+						</exclude>
 
 						<!-- snapshots -->
 						<exclude>**/src/test/resources/serializer-snapshot-*</exclude>
@@ -1508,22 +1537,41 @@ under the License.
 						<exclude>**/src/test/resources/*-snapshot</exclude>
 						<exclude>**/src/test/resources/*.snapshot</exclude>
 						<exclude>**/src/test/resources/*-savepoint</exclude>
-						<exclude>flink-core/src/test/resources/serialized-kryo-serializer-1.3</exclude>
-						<exclude>flink-core/src/test/resources/type-without-avro-serialized-using-kryo</exclude>
-						<exclude>flink-formats/flink-avro/src/test/resources/flink-1.4-serializer-java-serialized</exclude>
+						<exclude>flink-core/src/test/resources/serialized-kryo-serializer-1.3
+						</exclude>
+						<exclude>
+							flink-core/src/test/resources/type-without-avro-serialized-using-kryo
+						</exclude>
+						<exclude>
+							flink-formats/flink-avro/src/test/resources/flink-1.4-serializer-java-serialized
+						</exclude>
 
-						<exclude>flink-end-to-end-tests/flink-state-evolution-test/src/main/java/org/apache/flink/avro/generated/*</exclude>
-						<exclude>flink-end-to-end-tests/flink-state-evolution-test/savepoints/*</exclude>
+						<exclude>
+							flink-end-to-end-tests/flink-state-evolution-test/src/main/java/org/apache/flink/avro/generated/*
+						</exclude>
+						<exclude>flink-end-to-end-tests/flink-state-evolution-test/savepoints/*
+						</exclude>
 						<exclude>flink-formats/flink-avro/src/test/resources/testdata.avro</exclude>
-						<exclude>flink-formats/flink-avro/src/test/java/org/apache/flink/formats/avro/generated/*.java</exclude>
-						<exclude>flink-formats/flink-avro-confluent-registry/src/test/resources/*.json</exclude>
-						<exclude>flink-formats/flink-avro-confluent-registry/src/test/resources/*.avro</exclude>
+						<exclude>
+							flink-formats/flink-avro/src/test/java/org/apache/flink/formats/avro/generated/*.java
+						</exclude>
+						<exclude>
+							flink-formats/flink-avro-confluent-registry/src/test/resources/*.json
+						</exclude>
+						<exclude>
+							flink-formats/flink-avro-confluent-registry/src/test/resources/*.avro
+						</exclude>
 						<exclude>flink-formats/flink-json/src/test/resources/*.txt</exclude>
-						<exclude>flink-formats/flink-parquet/src/test/java/org/apache/flink/formats/parquet/generated/*.java</exclude>
+						<exclude>
+							flink-formats/flink-parquet/src/test/java/org/apache/flink/formats/parquet/generated/*.java
+						</exclude>
 						<exclude>flink-formats/flink-parquet/src/test/resources/avro/**</exclude>
-						<exclude>flink-formats/flink-parquet/src/test/resources/protobuf/**</exclude>
+						<exclude>flink-formats/flink-parquet/src/test/resources/protobuf/**
+						</exclude>
 						<!-- netty test file, still Apache License 2.0 but with a different header -->
-						<exclude>flink-runtime/src/test/java/org/apache/flink/runtime/io/network/buffer/AbstractByteBufTest.java</exclude>
+						<exclude>
+							flink-runtime/src/test/java/org/apache/flink/runtime/io/network/buffer/AbstractByteBufTest.java
+						</exclude>
 						<!-- Configuration Files. -->
 						<exclude>**/flink-bin/conf/workers</exclude>
 						<exclude>**/flink-bin/conf/masters</exclude>
@@ -1551,8 +1599,12 @@ under the License.
 						<!-- PyCharm -->
 						<exclude>**/.idea/**</exclude>
 						<!-- Generated code via Avro -->
-						<exclude>flink-end-to-end-tests/flink-confluent-schema-registry/src/main/java/example/avro/**</exclude>
-						<exclude>flink-end-to-end-tests/flink-datastream-allround-test/src/main/java/org/apache/flink/streaming/tests/avro/**</exclude>
+						<exclude>
+							flink-end-to-end-tests/flink-confluent-schema-registry/src/main/java/example/avro/**
+						</exclude>
+						<exclude>
+							flink-end-to-end-tests/flink-datastream-allround-test/src/main/java/org/apache/flink/streaming/tests/avro/**
+						</exclude>
 						<!-- Files generated by jepsen tests -->
 						<exclude>flink-jepsen/store/**</exclude>
 						<exclude>flink-jepsen/docker/id_rsa*</exclude>
@@ -1596,9 +1648,12 @@ under the License.
 						<checkpointing.randomization>true</checkpointing.randomization>
 						<project.basedir>${project.basedir}</project.basedir>
 						<!--suppress MavenModelInspection -->
-						<test.randomization.seed>${test.randomization.seed}</test.randomization.seed>
+						<test.randomization.seed>${test.randomization.seed}
+						</test.randomization.seed>
 					</systemPropertyVariables>
-					<argLine>-Xms256m -Xmx2048m -Dmvn.forkNumber=${surefire.forkNumber} -XX:+UseG1GC</argLine>
+					<argLine>-Xms256m -Xmx2048m -Dmvn.forkNumber=${surefire.forkNumber}
+						-XX:+UseG1GC
+					</argLine>
 				</configuration>
 				<executions>
 					<!--execute all the unit tests-->
@@ -1775,9 +1830,11 @@ under the License.
 					</filters>
 					<transformers combine.children="append">
 						<!-- The service transformer is needed to merge META-INF/services files -->
-						<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+						<transformer
+							implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
 						<!-- The ApacheNoticeResourceTransformer collects and aggregates NOTICE files -->
-						<transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
+						<transformer
+							implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
 							<projectName>Apache Flink</projectName>
 							<encoding>UTF-8</encoding>
 						</transformer>
@@ -1794,7 +1851,9 @@ under the License.
 							<shadeTestJar>true</shadeTestJar>
 							<shadedArtifactAttached>false</shadedArtifactAttached>
 							<createDependencyReducedPom>true</createDependencyReducedPom>
-							<dependencyReducedPomLocation>${project.basedir}/target/dependency-reduced-pom.xml</dependencyReducedPomLocation>
+							<dependencyReducedPomLocation>
+								${project.basedir}/target/dependency-reduced-pom.xml
+							</dependencyReducedPomLocation>
 							<!-- Filters MUST be appended; merging filters does not work properly, see MSHADE-305 -->
 							<filters combine.children="append">
 								<!-- drop entries into META-INF and NOTICE files for the dummy artifact -->
@@ -1913,10 +1972,12 @@ under the License.
 
 							<!-- \# refers to the static imports -->
 							<importOrder>
-								<order>org.apache.flink,org.apache.flink.shaded,,javax,java,scala,\#</order>
+								<order>
+									org.apache.flink,org.apache.flink.shaded,,javax,java,scala,\#
+								</order>
 							</importOrder>
 
-							<removeUnusedImports />
+							<removeUnusedImports/>
 						</java>
 					</configuration>
 					<executions>
@@ -2078,7 +2139,9 @@ under the License.
 						</oldVersion>
 						<newVersion>
 							<file>
-								<path>${project.build.directory}/${project.artifactId}-${project.version}.${project.packaging}</path>
+								<path>
+									${project.build.directory}/${project.artifactId}-${project.version}.${project.packaging}
+								</path>
 							</file>
 						</newVersion>
 						<parameter>
@@ -2091,23 +2154,48 @@ under the License.
 							</includes>
 							<excludes>
 								<exclude>@org.apache.flink.annotation.Internal</exclude>
-								<exclude>org.apache.flink.streaming.api.datastream.DataStream#DataStream(org.apache.flink.streaming.api.environment.StreamExecutionEnvironment,org.apache.flink.streaming.api.transformations.StreamTransformation)</exclude>
-								<exclude>org.apache.flink.streaming.api.environment.LegacyLocalStreamEnvironment</exclude>
-								<exclude>org.apache.flink.streaming.api.functions.sink.RichSinkFunction#invoke(java.lang.Object)</exclude>
-								<exclude>org.apache.flink.streaming.api.functions.sink.SinkFunction</exclude>
-								<exclude>org.apache.flink.api.java.hadoop.mapred.HadoopInputFormat</exclude>
-								<exclude>org.apache.flink.api.java.hadoop.mapred.HadoopOutputFormat</exclude>
-								<exclude>org.apache.flink.api.java.hadoop.mapreduce.HadoopInputFormat</exclude>
-								<exclude>org.apache.flink.api.java.hadoop.mapreduce.HadoopOutputFormat</exclude>
-								<exclude>org.apache.flink.api.scala.hadoop.mapred.HadoopInputFormat</exclude>
-								<exclude>org.apache.flink.api.scala.hadoop.mapred.HadoopOutputFormat</exclude>
-								<exclude>org.apache.flink.api.scala.hadoop.mapreduce.HadoopInputFormat</exclude>
-								<exclude>org.apache.flink.api.scala.hadoop.mapreduce.HadoopOutputFormat</exclude>
+								<exclude>
+									org.apache.flink.streaming.api.datastream.DataStream#DataStream(org.apache.flink.streaming.api.environment.StreamExecutionEnvironment,org.apache.flink.streaming.api.transformations.StreamTransformation)
+								</exclude>
+								<exclude>
+									org.apache.flink.streaming.api.environment.LegacyLocalStreamEnvironment
+								</exclude>
+								<exclude>
+									org.apache.flink.streaming.api.functions.sink.RichSinkFunction#invoke(java.lang.Object)
+								</exclude>
+								<exclude>
+									org.apache.flink.streaming.api.functions.sink.SinkFunction
+								</exclude>
+								<exclude>org.apache.flink.api.java.hadoop.mapred.HadoopInputFormat
+								</exclude>
+								<exclude>
+									org.apache.flink.api.java.hadoop.mapred.HadoopOutputFormat
+								</exclude>
+								<exclude>
+									org.apache.flink.api.java.hadoop.mapreduce.HadoopInputFormat
+								</exclude>
+								<exclude>
+									org.apache.flink.api.java.hadoop.mapreduce.HadoopOutputFormat
+								</exclude>
+								<exclude>
+									org.apache.flink.api.scala.hadoop.mapred.HadoopInputFormat
+								</exclude>
+								<exclude>
+									org.apache.flink.api.scala.hadoop.mapred.HadoopOutputFormat
+								</exclude>
+								<exclude>
+									org.apache.flink.api.scala.hadoop.mapreduce.HadoopInputFormat
+								</exclude>
+								<exclude>
+									org.apache.flink.api.scala.hadoop.mapreduce.HadoopOutputFormat
+								</exclude>
 							</excludes>
 							<accessModifier>public</accessModifier>
 							<breakBuildOnModifications>false</breakBuildOnModifications>
-							<breakBuildOnBinaryIncompatibleModifications>true</breakBuildOnBinaryIncompatibleModifications>
-							<breakBuildOnSourceIncompatibleModifications>true</breakBuildOnSourceIncompatibleModifications>
+							<breakBuildOnBinaryIncompatibleModifications>true
+							</breakBuildOnBinaryIncompatibleModifications>
+							<breakBuildOnSourceIncompatibleModifications>true
+							</breakBuildOnSourceIncompatibleModifications>
 							<onlyBinaryIncompatible>false</onlyBinaryIncompatible>
 							<includeSynthetic>true</includeSynthetic>
 							<ignoreMissingClasses>false</ignoreMissingClasses>
@@ -2115,7 +2203,8 @@ under the License.
 							<!-- Don't break build on newly added maven modules -->
 							<ignoreNonResolvableArtifacts>true</ignoreNonResolvableArtifacts>
 						</parameter>
-						<projectBuildDir>${rootDir}/${japicmp.outputDir}/${project.artifactId}</projectBuildDir>
+						<projectBuildDir>${rootDir}/${japicmp.outputDir}/${project.artifactId}
+						</projectBuildDir>
 						<dependencies>
 							<dependency>
 								<groupId>org.apache.flink</groupId>

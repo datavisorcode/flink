@@ -54,14 +54,12 @@ import org.apache.flink.streaming.runtime.tasks.ProcessingTimeService;
 import org.apache.flink.streaming.runtime.tasks.StreamTask;
 import org.apache.flink.streaming.util.LatencyStats;
 import org.apache.flink.util.Preconditions;
-import org.apache.flink.util.TenantContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 
 import static org.apache.flink.util.Preconditions.checkState;
@@ -624,10 +622,6 @@ public abstract class AbstractStreamOperator<OUT>
     }
 
     public void processWatermark(Watermark mark) throws Exception {
-        String tenant = TenantContext.getTenant();
-        if (!Objects.equals(tenant, mark.getKey())) {
-            return;
-        }
         if (timeServiceManager != null) {
             timeServiceManager.advanceWatermark(mark);
         }

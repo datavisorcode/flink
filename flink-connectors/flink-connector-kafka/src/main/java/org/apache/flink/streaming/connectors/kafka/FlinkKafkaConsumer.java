@@ -21,6 +21,7 @@ import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.metrics.MetricGroup;
+import org.apache.flink.runtime.util.SerializableFunction;
 import org.apache.flink.streaming.api.operators.StreamingRuntimeContext;
 import org.apache.flink.streaming.connectors.kafka.config.OffsetCommitMode;
 import org.apache.flink.streaming.connectors.kafka.internals.AbstractFetcher;
@@ -87,6 +88,9 @@ public class FlinkKafkaConsumer<T> extends FlinkKafkaConsumerBase<T> {
     /** User-supplied properties for Kafka. * */
     protected final Properties properties;
 
+    /** Optional tenant supplier to get tenant name from the kafka topic partition */
+    protected final SerializableFunction<KafkaTopicPartition, String> tenantSupplier;
+
     /**
      * From Kafka's Javadoc: The time, in milliseconds, spent waiting in poll if data is not
      * available. If 0, returns immediately with any records that are available now
@@ -111,6 +115,23 @@ public class FlinkKafkaConsumer<T> extends FlinkKafkaConsumerBase<T> {
     /**
      * Creates a new Kafka streaming source consumer.
      *
+     * @param topic The name of the topic that should be consumed.
+     * @param valueDeserializer The de-/serializer used to convert between Kafka's byte messages and
+     *     Flink's objects.
+     * @param props
+     * @param tenantSupplier The tenant supplier to get tenant name from kafka topic partition
+     */
+    public FlinkKafkaConsumer(
+            String topic,
+            DeserializationSchema<T> valueDeserializer,
+            Properties props,
+            SerializableFunction<KafkaTopicPartition, String> tenantSupplier) {
+        this(Collections.singletonList(topic), valueDeserializer, props, tenantSupplier);
+    }
+
+    /**
+     * Creates a new Kafka streaming source consumer.
+     *
      * <p>This constructor allows passing a {@see KafkaDeserializationSchema} for reading key/value
      * pairs, offsets, and topic names from Kafka.
      *
@@ -122,6 +143,26 @@ public class FlinkKafkaConsumer<T> extends FlinkKafkaConsumerBase<T> {
     public FlinkKafkaConsumer(
             String topic, KafkaDeserializationSchema<T> deserializer, Properties props) {
         this(Collections.singletonList(topic), deserializer, props);
+    }
+
+    /**
+     * Creates a new Kafka streaming source consumer.
+     *
+     * <p>This constructor allows passing a {@see KafkaDeserializationSchema} for reading key/value
+     * pairs, offsets, and topic names from Kafka.
+     *
+     * @param topic The name of the topic that should be consumed.
+     * @param deserializer The keyed de-/serializer used to convert between Kafka's byte messages
+     *     and Flink's objects.
+     * @param props
+     * @param tenantSupplier The tenant supplier to get tenant name from kafka topic partition
+     */
+    public FlinkKafkaConsumer(
+            String topic,
+            KafkaDeserializationSchema<T> deserializer,
+            Properties props,
+            SerializableFunction<KafkaTopicPartition, String> tenantSupplier) {
+        this(Collections.singletonList(topic), deserializer, props, tenantSupplier);
     }
 
     /**
@@ -142,6 +183,25 @@ public class FlinkKafkaConsumer<T> extends FlinkKafkaConsumerBase<T> {
     /**
      * Creates a new Kafka streaming source consumer.
      *
+     * <p>This constructor allows passing multiple topics to the consumer.
+     *
+     * @param topics The Kafka topics to read from.
+     * @param deserializer The de-/serializer used to convert between Kafka's byte messages and
+     *     Flink's objects.
+     * @param props
+     * @param tenantSupplier The tenant supplier to get tenant name from kafka topic partition
+     */
+    public FlinkKafkaConsumer(
+            List<String> topics,
+            DeserializationSchema<T> deserializer,
+            Properties props,
+            SerializableFunction<KafkaTopicPartition, String> tenantSupplier) {
+        this(topics, new KafkaDeserializationSchemaWrapper<>(deserializer), props, tenantSupplier);
+    }
+
+    /**
+     * Creates a new Kafka streaming source consumer.
+     *
      * <p>This constructor allows passing multiple topics and a key/value deserialization schema.
      *
      * @param topics The Kafka topics to read from.
@@ -152,6 +212,23 @@ public class FlinkKafkaConsumer<T> extends FlinkKafkaConsumerBase<T> {
     public FlinkKafkaConsumer(
             List<String> topics, KafkaDeserializationSchema<T> deserializer, Properties props) {
         this(topics, null, deserializer, props);
+    }
+
+    /**
+     * Creates a new Kafka streaming source consumer.
+     *
+     * @param topics The Kafka topics to read from.
+     * @param deserializer The keyed de-/serializer used to convert between Kafka's byte messages
+     *     and Flink's objects.
+     * @param props
+     * @param tenantSupplier The tenant supplier to get tenant name from kafka topic partition
+     */
+    public FlinkKafkaConsumer(
+            List<String> topics,
+            KafkaDeserializationSchema<T> deserializer,
+            Properties props,
+            SerializableFunction<KafkaTopicPartition, String> tenantSupplier) {
+        this(topics, null, deserializer, tenantSupplier, props);
     }
 
     /**
@@ -187,6 +264,34 @@ public class FlinkKafkaConsumer<T> extends FlinkKafkaConsumerBase<T> {
      * FlinkKafkaConsumer#KEY_PARTITION_DISCOVERY_INTERVAL_MILLIS} in the properties), topics with
      * names matching the pattern will also be subscribed to as they are created on the fly.
      *
+     * @param subscriptionPattern The regular expression for a pattern of topic names to subscribe
+     *     to.
+     * @param valueDeserializer The de-/serializer used to convert between Kafka's byte messages and
+     *     Flink's objects.
+     * @param props
+     * @param tenantSupplier The tenant supplier to get tenant name from kafka topic partition
+     */
+    public FlinkKafkaConsumer(
+            Pattern subscriptionPattern,
+            DeserializationSchema<T> valueDeserializer,
+            Properties props,
+            SerializableFunction<KafkaTopicPartition, String> tenantSupplier) {
+        this(
+                null,
+                subscriptionPattern,
+                new KafkaDeserializationSchemaWrapper<>(valueDeserializer),
+                tenantSupplier,
+                props);
+    }
+
+    /**
+     * Creates a new Kafka streaming source consumer. Use this constructor to subscribe to multiple
+     * topics based on a regular expression pattern.
+     *
+     * <p>If partition discovery is enabled (by setting a non-negative value for {@link
+     * FlinkKafkaConsumer#KEY_PARTITION_DISCOVERY_INTERVAL_MILLIS} in the properties), topics with
+     * names matching the pattern will also be subscribed to as they are created on the fly.
+     *
      * <p>This constructor allows passing a {@see KafkaDeserializationSchema} for reading key/value
      * pairs, offsets, and topic names from Kafka.
      *
@@ -203,10 +308,45 @@ public class FlinkKafkaConsumer<T> extends FlinkKafkaConsumerBase<T> {
         this(null, subscriptionPattern, deserializer, props);
     }
 
+    /**
+     * Creates a new Kafka streaming source consumer. Use this constructor to subscribe to multiple
+     * topics based on a regular expression pattern.
+     *
+     * <p>If partition discovery is enabled (by setting a non-negative value for {@link
+     * FlinkKafkaConsumer#KEY_PARTITION_DISCOVERY_INTERVAL_MILLIS} in the properties), topics with
+     * names matching the pattern will also be subscribed to as they are created on the fly.
+     *
+     * <p>This constructor allows passing a {@see KafkaDeserializationSchema} for reading key/value
+     * pairs, offsets, and topic names from Kafka.
+     *
+     * @param subscriptionPattern The regular expression for a pattern of topic names to subscribe
+     *     to.
+     * @param deserializer The keyed de-/serializer used to convert between Kafka's byte messages
+     *     and Flink's objects.
+     * @param props
+     * @param tenantSupplier The tenant supplier to get tenant name from kafka topic partition
+     */
+    public FlinkKafkaConsumer(
+            Pattern subscriptionPattern,
+            KafkaDeserializationSchema<T> deserializer,
+            Properties props,
+            SerializableFunction<KafkaTopicPartition, String> tenantSupplier) {
+        this(null, subscriptionPattern, deserializer, tenantSupplier, props);
+    }
+
     private FlinkKafkaConsumer(
             List<String> topics,
             Pattern subscriptionPattern,
             KafkaDeserializationSchema<T> deserializer,
+            Properties props) {
+        this(topics, subscriptionPattern, deserializer, ktp -> null, props);
+    }
+
+    private FlinkKafkaConsumer(
+            List<String> topics,
+            Pattern subscriptionPattern,
+            KafkaDeserializationSchema<T> deserializer,
+            SerializableFunction<KafkaTopicPartition, String> tenantSupplier,
             Properties props) {
 
         super(
@@ -220,6 +360,7 @@ public class FlinkKafkaConsumer<T> extends FlinkKafkaConsumerBase<T> {
                 !getBoolean(props, KEY_DISABLE_METRICS, false));
 
         this.properties = props;
+        this.tenantSupplier = tenantSupplier;
         setDeserializer(this.properties);
 
         // configure the polling timeout
@@ -260,6 +401,7 @@ public class FlinkKafkaConsumer<T> extends FlinkKafkaConsumerBase<T> {
                 runtimeContext.getTaskNameWithSubtasks(),
                 deserializer,
                 properties,
+                tenantSupplier,
                 pollTimeout,
                 runtimeContext.getMetricGroup(),
                 consumerMetricGroup,

@@ -20,6 +20,7 @@ package org.apache.flink.streaming.connectors.kafka.internals;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.metrics.MetricGroup;
+import org.apache.flink.runtime.util.SerializableFunction;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import org.apache.flink.streaming.connectors.kafka.KafkaDeserializationSchema;
 import org.apache.flink.streaming.runtime.tasks.ProcessingTimeService;
@@ -85,6 +86,7 @@ public class KafkaFetcher<T> extends AbstractFetcher<T, TopicPartition> {
             String taskNameWithSubtasks,
             KafkaDeserializationSchema<T> deserializer,
             Properties kafkaProperties,
+            SerializableFunction<KafkaTopicPartition, String> tenantSupplier,
             long pollTimeout,
             MetricGroup subtaskMetricGroup,
             MetricGroup consumerMetricGroup,
@@ -98,7 +100,8 @@ public class KafkaFetcher<T> extends AbstractFetcher<T, TopicPartition> {
                 autoWatermarkInterval,
                 userCodeClassLoader,
                 consumerMetricGroup,
-                useMetrics);
+                useMetrics,
+                tenantSupplier);
 
         this.deserializer = deserializer;
         this.handover = new Handover();
@@ -163,6 +166,11 @@ public class KafkaFetcher<T> extends AbstractFetcher<T, TopicPartition> {
         running = false;
         handover.close();
         consumerThread.shutdown();
+    }
+
+    @Override
+    protected String getTenantNameFromKafkaHandle(KafkaTopicPartition kafkaTopicPartition) {
+        return tenantSupplier.apply(kafkaTopicPartition);
     }
 
     /** Gets the name of this fetcher, for thread naming and logging purposes. */

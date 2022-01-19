@@ -138,8 +138,10 @@ public final class StreamElementSerializer<T> extends TypeSerializer<StreamEleme
             // move timestamp
             target.writeLong(source.readLong());
             typeSerializer.copy(source, target);
+            target.writeUTF(source.readUTF());
         } else if (tag == TAG_REC_WITHOUT_TIMESTAMP) {
             typeSerializer.copy(source, target);
+            target.writeUTF(source.readUTF());
         } else if (tag == TAG_WATERMARK) {
             target.writeLong(source.readLong());
             target.writeUTF(source.readUTF());
@@ -167,6 +169,7 @@ public final class StreamElementSerializer<T> extends TypeSerializer<StreamEleme
                 target.write(TAG_REC_WITHOUT_TIMESTAMP);
             }
             typeSerializer.serialize(record.getValue(), target);
+            target.writeUTF(record.getTenant() == null ? "" : record.getTenant());
         } else if (value.isWatermark()) {
             target.write(TAG_WATERMARK);
             target.writeLong(value.asWatermark().getTimestamp());
@@ -190,9 +193,14 @@ public final class StreamElementSerializer<T> extends TypeSerializer<StreamEleme
         int tag = source.readByte();
         if (tag == TAG_REC_WITH_TIMESTAMP) {
             long timestamp = source.readLong();
-            return new StreamRecord<T>(typeSerializer.deserialize(source), timestamp);
+            StreamRecord<T> record =
+                    new StreamRecord<>(typeSerializer.deserialize(source), timestamp);
+            record.setTenant(source.readUTF());
+            return record;
         } else if (tag == TAG_REC_WITHOUT_TIMESTAMP) {
-            return new StreamRecord<T>(typeSerializer.deserialize(source));
+            StreamRecord<T> record = new StreamRecord<>(typeSerializer.deserialize(source));
+            record.setTenant(source.readUTF());
+            return record;
         } else if (tag == TAG_WATERMARK) {
             return new Watermark(source.readLong(), source.readUTF());
         } else if (tag == TAG_STREAM_STATUS) {
@@ -215,11 +223,13 @@ public final class StreamElementSerializer<T> extends TypeSerializer<StreamEleme
             T value = typeSerializer.deserialize(source);
             StreamRecord<T> reuseRecord = reuse.asRecord();
             reuseRecord.replace(value, timestamp);
+            reuseRecord.setTenant(source.readUTF());
             return reuseRecord;
         } else if (tag == TAG_REC_WITHOUT_TIMESTAMP) {
             T value = typeSerializer.deserialize(source);
             StreamRecord<T> reuseRecord = reuse.asRecord();
             reuseRecord.replace(value);
+            reuseRecord.setTenant(source.readUTF());
             return reuseRecord;
         } else if (tag == TAG_WATERMARK) {
             return new Watermark(source.readLong(), source.readUTF());

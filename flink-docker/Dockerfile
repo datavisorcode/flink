@@ -16,7 +16,7 @@
 # limitations under the License.
 ###############################################################################
 
-FROM openjdk:8-jre
+FROM openjdk:8-jdk
 
 # Install dependencies
 RUN set -ex; \
@@ -53,7 +53,8 @@ WORKDIR $FLINK_HOME
 # Install Flink
 ADD ./dist/flink.tar.gz $FLINK_HOME/
 RUN mkdir -p $FLINK_HOME/plugins/s3-fs-hadoop/ \
-    && cp $FLINK_HOME/opt/flink-s3-fs-hadoop-1.13-SNAPSHOT.jar $FLINK_HOME/plugins/s3-fs-hadoop/
+    && cp $FLINK_HOME/opt/flink-s3-fs-hadoop-1.13-DV-SNAPSHOT.jar $FLINK_HOME/plugins/s3-fs-hadoop/ \
+    && chown -R flink:flink .
 
 # Configure container
 COPY docker-entrypoint.sh /

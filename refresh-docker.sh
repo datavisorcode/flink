@@ -84,7 +84,12 @@ if [ -n $RECOMPILE ]; then
     if [ "${project}" == "flink" ]; then
       echo "=========== Recompile flink project ==========="
       cd $FLINK_HOME
-      mvn clean install -DskipTests -Dfast -T 1C
+      mvn spotless:apply
+      mvn clean install -DskipTests -Ddocs-and-source -Dfast -T 1C
+      cd $FLINK_HOME/flink-filesystems
+      mvn clean install -DskipTests
+      cd $FLINK_HOME/flink-dist
+      mvn clean install -DskipTests
     fi
 
   done

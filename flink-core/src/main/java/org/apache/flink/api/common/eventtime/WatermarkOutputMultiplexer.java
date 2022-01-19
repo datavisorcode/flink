@@ -21,6 +21,8 @@ package org.apache.flink.api.common.eventtime;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.util.Preconditions;
 
+import com.datavisor.storage.TenantContext;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,8 +59,8 @@ public class WatermarkOutputMultiplexer {
      */
     private final WatermarkOutput underlyingOutput;
 
-    /** The combined watermark over the per-output watermarks. */
-    private long combinedWatermark = Long.MIN_VALUE;
+    /** The combined watermark over the per-tenant and output watermarks. */
+    private Map<String, Long> combinedWatermark;
 
     /**
      * Map view, to allow finding them when requesting the {@link WatermarkOutput} for a given id.
@@ -75,6 +77,7 @@ public class WatermarkOutputMultiplexer {
     public WatermarkOutputMultiplexer(WatermarkOutput underlyingOutput) {
         this.underlyingOutput = underlyingOutput;
         this.watermarkPerOutputId = new HashMap<>();
+        this.combinedWatermark = new HashMap<>();
         this.watermarkOutputs = new ArrayList<>();
     }
 
@@ -84,7 +87,17 @@ public class WatermarkOutputMultiplexer {
      * output.
      */
     public void registerNewOutput(String id) {
+        registerNewOutput(id, null);
+    }
+
+    /**
+     * Registers a new multiplexed output, which creates internal states for that output and returns
+     * an output ID that can be used to get a deferred or immediate {@link WatermarkOutput} for that
+     * output. Also, maybe provide the tenant of each output ID
+     */
+    public void registerNewOutput(String id, String tenant) {
         final OutputState outputState = new OutputState();
+        outputState.setKey(tenant);
 
         final OutputState previouslyRegistered = watermarkPerOutputId.putIfAbsent(id, outputState);
         checkState(previouslyRegistered == null, "Already contains an output for ID %s", id);
@@ -142,13 +155,17 @@ public class WatermarkOutputMultiplexer {
      * deferred per-output updates.
      */
     private void updateCombinedWatermark() {
-        long minimumOverAllOutputs = Long.MAX_VALUE;
-
+        Map<String, Long> minimumOverAllOutputs = new HashMap<>();
         boolean hasOutputs = false;
         boolean allIdle = true;
         for (OutputState outputState : watermarkOutputs) {
             if (!outputState.isIdle()) {
-                minimumOverAllOutputs = Math.min(minimumOverAllOutputs, outputState.getWatermark());
+                String tenant = outputState.getKey();
+                minimumOverAllOutputs.put(
+                        tenant,
+                        Math.min(
+                                minimumOverAllOutputs.getOrDefault(tenant, Long.MAX_VALUE),
+                                outputState.getWatermark()));
                 allIdle = false;
             }
             hasOutputs = true;
@@ -160,11 +177,22 @@ public class WatermarkOutputMultiplexer {
             return;
         }
 
-        if (allIdle) {
+        if (!allIdle) {
+            for (Map.Entry<String, Long> entry : minimumOverAllOutputs.entrySet()) {
+                String tenant = entry.getKey();
+                Long minimumWm = entry.getValue();
+                if (minimumWm > combinedWatermark.getOrDefault(tenant, Long.MIN_VALUE)) {
+                    combinedWatermark.put(tenant, minimumWm);
+                    try {
+                        TenantContext.setTenant(tenant);
+                        underlyingOutput.emitWatermark(new Watermark(minimumWm));
+                    } finally {
+                        TenantContext.reset();
+                    }
+                }
+            }
+        } else {
             underlyingOutput.markIdle();
-        } else if (minimumOverAllOutputs > combinedWatermark) {
-            combinedWatermark = minimumOverAllOutputs;
-            underlyingOutput.emitWatermark(new Watermark(minimumOverAllOutputs));
         }
     }
 
@@ -172,6 +200,7 @@ public class WatermarkOutputMultiplexer {
     private static class OutputState {
         private long watermark = Long.MIN_VALUE;
         private boolean idle = false;
+        private String key;
 
         /**
          * Returns the current watermark timestamp. This will throw {@link IllegalStateException} if
@@ -202,6 +231,14 @@ public class WatermarkOutputMultiplexer {
         public void setIdle(boolean idle) {
             this.idle = idle;
         }
+
+        public String getKey() {
+            return key;
+        }
+
+        public void setKey(String key) {
+            this.key = key;
+        }
     }
 
     /**
@@ -220,10 +257,13 @@ public class WatermarkOutputMultiplexer {
         public void emitWatermark(Watermark watermark) {
             long timestamp = watermark.getTimestamp();
             boolean wasUpdated = state.setWatermark(timestamp);
+            state.setKey(watermark.getKey());
 
             // if it's higher than the max watermark so far we might have to update the
             // combined watermark
-            if (wasUpdated && timestamp > combinedWatermark) {
+            if (wasUpdated
+                    && timestamp
+                            > combinedWatermark.getOrDefault(watermark.getKey(), Long.MIN_VALUE)) {
                 updateCombinedWatermark();
             }
         }
@@ -254,6 +294,7 @@ public class WatermarkOutputMultiplexer {
         @Override
         public void emitWatermark(Watermark watermark) {
             state.setWatermark(watermark.getTimestamp());
+            state.setKey(watermark.getKey());
         }
 
         @Override

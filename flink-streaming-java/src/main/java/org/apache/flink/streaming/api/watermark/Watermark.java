@@ -19,8 +19,7 @@ package org.apache.flink.streaming.api.watermark;
 
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.streaming.runtime.streamrecord.StreamElement;
-
-import com.datavisor.storage.TenantContext;
+import org.apache.flink.util.TenantContext;
 
 import java.util.Objects;
 

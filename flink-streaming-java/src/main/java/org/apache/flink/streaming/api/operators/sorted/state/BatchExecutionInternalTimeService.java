@@ -25,9 +25,9 @@ import org.apache.flink.streaming.api.operators.InternalTimerService;
 import org.apache.flink.streaming.api.operators.TimerHeapInternalTimer;
 import org.apache.flink.streaming.api.operators.Triggerable;
 import org.apache.flink.streaming.runtime.tasks.ProcessingTimeService;
+import org.apache.flink.util.TenantContext;
 import org.apache.flink.util.function.BiConsumerWithException;
 
-import com.datavisor.storage.TenantContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -28,9 +28,9 @@ import org.apache.flink.streaming.runtime.tasks.ProcessingTimeService;
 import org.apache.flink.util.CloseableIterator;
 import org.apache.flink.util.FlinkRuntimeException;
 import org.apache.flink.util.Preconditions;
+import org.apache.flink.util.TenantContext;
 import org.apache.flink.util.function.BiConsumerWithException;
 
-import com.datavisor.storage.TenantContext;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;

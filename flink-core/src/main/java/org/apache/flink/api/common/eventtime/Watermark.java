@@ -18,8 +18,7 @@
 package org.apache.flink.api.common.eventtime;
 
 import org.apache.flink.annotation.Public;
-
-import com.datavisor.storage.TenantContext;
+import org.apache.flink.util.TenantContext;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;

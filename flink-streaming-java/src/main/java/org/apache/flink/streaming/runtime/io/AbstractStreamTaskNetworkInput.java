@@ -31,9 +31,9 @@ import org.apache.flink.streaming.runtime.io.checkpointing.CheckpointedInputGate
 import org.apache.flink.streaming.runtime.streamrecord.StreamElement;
 import org.apache.flink.streaming.runtime.streamrecord.StreamElementSerializer;
 import org.apache.flink.streaming.runtime.streamrecord.StreamRecord;
+import org.apache.flink.streaming.runtime.streamrecord.TenantRecord;
 import org.apache.flink.streaming.runtime.streamstatus.StatusWatermarkValve;
-
-import com.datavisor.storage.TenantContext;
+import org.apache.flink.util.TenantContext;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -135,7 +135,9 @@ public abstract class AbstractStreamTaskNetworkInput<
     private void processElement(StreamElement recordOrMark, DataOutput<T> output) throws Exception {
         if (recordOrMark.isRecord()) {
             StreamRecord<T> record = recordOrMark.asRecord();
-            TenantContext.setTenant(record.getTenant());
+            if (TenantRecord.class.isAssignableFrom(record.getValue().getClass())) {
+                TenantContext.setTenant(((TenantRecord) record.getValue()).getTenant());
+            }
             try {
                 output.emitRecord(record);
             } finally {

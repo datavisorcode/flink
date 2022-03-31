@@ -20,8 +20,7 @@ package org.apache.flink.api.common.eventtime;
 
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.util.Preconditions;
-
-import com.datavisor.storage.TenantContext;
+import org.apache.flink.util.TenantContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;

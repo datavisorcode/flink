@@ -26,6 +26,7 @@ import org.apache.flink.streaming.connectors.kafka.KafkaDeserializationSchema;
 import org.apache.flink.streaming.runtime.tasks.ProcessingTimeService;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.SerializedValue;
+import org.apache.flink.util.TenantContext;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -36,12 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 
-import java.util.ArrayDeque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Queue;
+import java.util.*;
 
 import static org.apache.flink.util.Preconditions.checkState;
 
@@ -183,19 +179,29 @@ public class KafkaFetcher<T> extends AbstractFetcher<T, TopicPartition> {
             KafkaTopicPartitionState<T, TopicPartition> partition)
             throws Exception {
 
-        for (ConsumerRecord<byte[], byte[]> record : partitionRecords) {
-            deserializer.deserialize(record, kafkaCollector);
+        try {
+            String tenant = getTenantNameFromKafkaHandle(partition.getKafkaTopicPartition());
+            TenantContext.setTenant(tenant);
 
-            // emit the actual records. this also updates offset state atomically and emits
-            // watermarks
-            emitRecordsWithTimestamps(
-                    kafkaCollector.getRecords(), partition, record.offset(), record.timestamp());
+            for (ConsumerRecord<byte[], byte[]> record : partitionRecords) {
+                deserializer.deserialize(record, kafkaCollector);
 
-            if (kafkaCollector.isEndOfStreamSignalled()) {
-                // end of stream signaled
-                running = false;
-                break;
+                // emit the actual records. this also updates offset state atomically and emits
+                // watermarks
+                emitRecordsWithTimestamps(
+                        kafkaCollector.getRecords(),
+                        partition,
+                        record.offset(),
+                        record.timestamp());
+
+                if (kafkaCollector.isEndOfStreamSignalled()) {
+                    // end of stream signaled
+                    running = false;
+                    break;
+                }
             }
+        } finally {
+            TenantContext.reset();
         }
     }
 

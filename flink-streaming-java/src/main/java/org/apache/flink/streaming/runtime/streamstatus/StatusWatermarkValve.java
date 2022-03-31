@@ -23,8 +23,7 @@ import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.streaming.runtime.io.PushingAsyncDataInput.DataOutput;
 import org.apache.flink.util.Preconditions;
-
-import com.datavisor.storage.TenantContext;
+import org.apache.flink.util.TenantContext;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

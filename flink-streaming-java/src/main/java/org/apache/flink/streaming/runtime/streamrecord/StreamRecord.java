@@ -18,9 +18,7 @@
 package org.apache.flink.streaming.runtime.streamrecord;
 
 import org.apache.flink.annotation.Internal;
-
-import com.datavisor.storage.TenantContext;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.flink.util.TenantContext;
 
 import java.util.Objects;
 
@@ -42,13 +40,9 @@ public final class StreamRecord<T> extends StreamElement {
     /** Flag whether the timestamp is actually set. */
     private boolean hasTimestamp;
 
-    /** The tenant of the record. */
-    private String tenant;
-
     /** Creates a new StreamRecord. The record does not have a timestamp. */
     public StreamRecord(T value) {
         this.value = value;
-        this.tenant = TenantContext.getTenant();
     }
 
     /**
@@ -62,7 +56,6 @@ public final class StreamRecord<T> extends StreamElement {
         this.value = value;
         this.timestamp = timestamp;
         this.hasTimestamp = true;
-        this.tenant = TenantContext.getTenant();
     }
 
     // ------------------------------------------------------------------------
@@ -85,11 +78,6 @@ public final class StreamRecord<T> extends StreamElement {
             // " +
             //							"did you forget to call 'DataStream.assignTimestampsAndWatermarks(...)'?");
         }
-    }
-
-    /** Returns the tenant associated with this stream value. */
-    public String getTenant() {
-        return tenant;
     }
 
     /**
@@ -115,7 +103,6 @@ public final class StreamRecord<T> extends StreamElement {
     @SuppressWarnings("unchecked")
     public <X> StreamRecord<X> replace(X element) {
         this.value = (T) element;
-        this.tenant = TenantContext.getTenant();
         return (StreamRecord<X>) this;
     }
 
@@ -133,7 +120,6 @@ public final class StreamRecord<T> extends StreamElement {
         this.timestamp = timestamp;
         this.value = (T) value;
         this.hasTimestamp = true;
-        this.tenant = TenantContext.getTenant();
 
         return (StreamRecord<X>) this;
     }
@@ -141,10 +127,6 @@ public final class StreamRecord<T> extends StreamElement {
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
         this.hasTimestamp = true;
-    }
-
-    public void setTenant(String tenant) {
-        this.tenant = StringUtils.isEmpty(tenant) ? null : tenant;
     }
 
     public void eraseTimestamp() {
@@ -163,7 +145,6 @@ public final class StreamRecord<T> extends StreamElement {
         StreamRecord<T> copy = new StreamRecord<>(valueCopy);
         copy.timestamp = this.timestamp;
         copy.hasTimestamp = this.hasTimestamp;
-        copy.tenant = this.tenant;
         return copy;
     }
 
@@ -175,7 +156,6 @@ public final class StreamRecord<T> extends StreamElement {
         target.value = valueCopy;
         target.timestamp = this.timestamp;
         target.hasTimestamp = this.hasTimestamp;
-        target.tenant = this.tenant;
     }
 
     // ------------------------------------------------------------------------
@@ -190,8 +170,7 @@ public final class StreamRecord<T> extends StreamElement {
             StreamRecord<?> that = (StreamRecord<?>) o;
             return this.hasTimestamp == that.hasTimestamp
                     && (!this.hasTimestamp || this.timestamp == that.timestamp)
-                    && (Objects.equals(this.value, that.value))
-                    && Objects.equals(this.tenant, that.tenant);
+                    && (Objects.equals(this.value, that.value));
         } else {
             return false;
         }
@@ -200,16 +179,11 @@ public final class StreamRecord<T> extends StreamElement {
     @Override
     public int hashCode() {
         int result = value != null ? value.hashCode() : 0;
-        result = 31 * result + (tenant != null ? tenant.hashCode() : 0);
         return 31 * result + (hasTimestamp ? (int) (timestamp ^ (timestamp >>> 32)) : 0);
     }
 
     @Override
     public String toString() {
-        return "Record @ "
-                + (hasTimestamp ? timestamp : "(undef)")
-                + (tenant == null ? "" : "-" + tenant)
-                + " : "
-                + value;
+        return "Record @ " + (hasTimestamp ? timestamp : "(undef)") + " : " + value;
     }
 }
